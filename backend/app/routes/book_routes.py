@@ -101,11 +101,21 @@ def delete_book(id):
     """Delete a book"""
     try:
         book = Book.query.get_or_404(id)
+        force_delete = request.args.get('force') == 'true'
         
-        # Check if book has active loans
-        active_loans = [loan for loan in book.loans if not loan.returned]
-        if active_loans:
-            return jsonify({'error': 'Cannot delete book with active loans'}), 400
+        if book.loans:
+            active_loans = [loan for loan in book.loans if loan.status == 'active']
+            if active_loans:
+                return jsonify({'error': 'Cannot delete book with active loans. Please return the book first.'}), 400
+            elif not force_delete:
+                return jsonify({
+                    'error': 'Cannot delete book with loan history. This book has been borrowed before.',
+                    'suggestion': 'Add ?force=true to URL to force delete and remove loan history.'
+                }), 400
+            else:
+                # Force delete: remove all loan records first
+                for loan in book.loans:
+                    db.session.delete(loan)
             
         db.session.delete(book)
         db.session.commit()

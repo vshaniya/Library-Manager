@@ -62,6 +62,7 @@ export default function BookManager() {
   const handleSubmit = async e => {
     e.preventDefault();
     setError('');
+    setSuccess('');
     
     try {
       // Basic validation
@@ -88,7 +89,7 @@ export default function BookManager() {
           authorId = newAuthorResponse.data.id;
           console.log('New author created with ID:', authorId);
           // Refresh authors list
-          fetchAuthors();
+          await fetchAuthors();
         }
       }
       
@@ -99,31 +100,39 @@ export default function BookManager() {
       
       const bookData = {
         title: form.title.trim(),
-        author_id: authorId,
-        description: form.description.trim() || null,
-        publication_year: form.publication_year ? parseInt(form.publication_year) : null,
-        isbn: form.isbn.trim() || null,
-        genre: form.genre.trim() || null,
-        pages: form.pages ? parseInt(form.pages) : null,
-        image_url: form.image_url.trim() || null
+        author_id: parseInt(authorId),
+        description: form.description.trim() || undefined,
+        publication_year: form.publication_year ? parseInt(form.publication_year) : undefined,
+        isbn: form.isbn.trim() || undefined,
+        genre: form.genre.trim() || undefined,
+        pages: form.pages ? parseInt(form.pages) : undefined,
+        image_url: form.image_url.trim() || undefined
       };
+      
+      // Remove undefined values
+      Object.keys(bookData).forEach(key => bookData[key] === undefined && delete bookData[key]);
       
       console.log('Submitting book data:', bookData);
       
       if (editingId) {
-        await updateBook(editingId, bookData);
+        const response = await updateBook(editingId, bookData);
+        console.log('Book updated:', response.data);
         setSuccess('Book updated successfully!');
       } else {
-        await createBook(bookData);
+        const response = await createBook(bookData);
+        console.log('Book created:', response.data);
         setSuccess('Book added successfully!');
       }
+      
       setForm(initialForm);
       setEditingId(null);
       setDialogOpen(false);
-      fetchBooks();
+      await fetchBooks();
     } catch (err) {
       console.error('Error submitting book:', err);
-      setError(err.response?.data?.error || 'Failed to save book');
+      console.error('Error response:', err.response?.data);
+      const errorMessage = err.response?.data?.error || err.message || 'Failed to save book';
+      setError(errorMessage);
     }
   };
 
@@ -145,13 +154,18 @@ export default function BookManager() {
   };
 
   const handleDelete = async id => {
-    if (window.confirm('Are you sure you want to delete this book?')) {
+    const book = books.find(b => b.id === id);
+    const bookTitle = book ? book.title : 'this book';
+    
+    if (window.confirm(`Are you sure you want to delete "${bookTitle}"?\n\nNote: Books with loan history cannot be deleted.`)) {
       try {
         await deleteBook(id);
         setSuccess('Book deleted successfully!');
         fetchBooks();
       } catch (err) {
-        setError(err.response?.data?.error || 'Failed to delete book');
+        console.error('Delete error:', err);
+        const errorMessage = err.response?.data?.error || 'Failed to delete book';
+        setError(errorMessage);
       }
     }
   };
@@ -331,6 +345,7 @@ export default function BookManager() {
               <Autocomplete
                 options={authors}
                 getOptionLabel={(option) => option.name || ''}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
                 value={authors.find(author => author.id === form.author_id) || null}
                 onChange={(event, newValue) => {
                   if (newValue) {

@@ -3,15 +3,15 @@
   - __init__.py
   - models/        # SQLAlchemy models
   - routes/        # API endpoints
-  - schemas/       # Marshmallow schemas (optional)
   - config.py      # Configuration (DB URI, etc)
-  - extensions.py  # DB, Marshmallow, etc
+  - extensions.py  # DB, CORS, etc
 - run.py           # Entry point
+- seed_data.py     # Database seeding script
+- wsgi.py          # WSGI entry point for production
 
 # Frontend (React)
 - src/
   - components/    # Reusable UI components
-  - pages/         # Page-level components
   - api/           # API call logic
   - App.js         # Main app
   - index.js       # Entry point
@@ -20,3 +20,5 @@
 - backend/
 - frontend/
 - README.md
+- DEPLOYMENT_GUIDE.md
+- deploy.sh / deploy.bat   # Deployment scripts

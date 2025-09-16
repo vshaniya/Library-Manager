@@ -20,14 +20,22 @@ def get_borrower(id):
 @borrower_bp.route('', methods=['POST'])
 @borrower_bp.route('/', methods=['POST'])
 def create_borrower():
-    """Create a new borrower"""
+    """Create a new borrower or return existing one by email"""
     try:
         data = request.json
         
-        # Check if email already exists
-        if Borrower.query.filter_by(email=data['email']).first():
-            return jsonify({'error': 'Email already exists'}), 400
+        # Check if borrower already exists by email
+        existing_borrower = Borrower.query.filter_by(email=data['email']).first()
+        if existing_borrower:
+            # Update existing borrower info if provided
+            if 'name' in data:
+                existing_borrower.name = data['name']
+            if 'phone' in data:
+                existing_borrower.phone = data.get('phone')
+            db.session.commit()
+            return jsonify(existing_borrower.to_dict()), 200
             
+        # Create new borrower if email doesn't exist
         new_borrower = Borrower(
             name=data['name'],
             email=data['email'],
@@ -38,6 +46,9 @@ def create_borrower():
         return jsonify(new_borrower.to_dict()), 201
     except KeyError as e:
         return jsonify({'error': f'Missing required field: {str(e)}'}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 400

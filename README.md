@@ -26,7 +26,7 @@ A full-stack web application for managing library operations with modern UI and 
 
 - **Frontend**: React 18, Material-UI, Axios
 - **Backend**: Flask, SQLAlchemy, Flask-CORS
-- **Database**: PostgreSQL (production) / SQLite (development)
+- **Database**: PostgreSQL with psycopg2-binary adapter
 - **API**: RESTful with JSON responses
 
 ## 📁 Project Structure

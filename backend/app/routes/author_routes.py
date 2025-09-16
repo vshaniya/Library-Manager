@@ -4,6 +4,7 @@ from app.models.models import Author
 
 author_bp = Blueprint('authors', __name__)
 
+@author_bp.route('', methods=['GET'])
 @author_bp.route('/', methods=['GET'])
 def get_authors():
     """Get all authors"""
@@ -16,6 +17,7 @@ def get_author(id):
     author = Author.query.get_or_404(id)
     return jsonify(author.to_dict())
 
+@author_bp.route('', methods=['POST'])
 @author_bp.route('/', methods=['POST'])
 def create_author():
     """Create a new author"""
