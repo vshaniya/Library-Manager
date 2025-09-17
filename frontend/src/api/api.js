@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 // Use environment variable for production, fallback to localhost for development
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://library-manager-2qw8.onrender.com/api';
+console.log('API_BASE_URL:', API_BASE_URL);
 // Books API
 export const getBooks = () => axios.get(`${API_BASE_URL}/books`);
 export const getBook = (id) => axios.get(`${API_BASE_URL}/books/${id}`);
